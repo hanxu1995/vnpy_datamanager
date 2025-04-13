@@ -12,9 +12,12 @@ from ..engine import APP_NAME, ManagerEngine, BarOverview
 
 
 INTERVAL_NAME_MAP = {
+    Interval.SECOND: "秒线",
     Interval.MINUTE: "分钟线",
     Interval.HOUR: "小时线",
     Interval.DAILY: "日线",
+    Interval.WEEKLY: "周线",
+    Interval.MONTHLY: "月线",
 }
 
 
@@ -118,7 +121,7 @@ class ManagerWidget(QtWidgets.QWidget):
         overviews.sort(key=lambda x: x.symbol)
 
         # 添加数据周期节点
-        for interval in [Interval.MINUTE, Interval.HOUR, Interval.DAILY]:
+        for interval in [Interval.SECOND, Interval.MINUTE, Interval.HOUR, Interval.DAILY, Interval.WEEKLY, Interval.MONTHLY]:
             interval_child = QtWidgets.QTreeWidgetItem()
             interval_childs[interval] = interval_child
 
