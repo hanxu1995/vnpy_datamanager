@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime
 from collections.abc import Callable
+import json
 
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
@@ -41,7 +42,8 @@ class ManagerEngine(BaseEngine):
         volume_head: str,
         turnover_head: str,
         open_interest_head: str,
-        datetime_format: str
+        datetime_format: str,
+        extra_head: str
     ) -> tuple:
         """"""
         with open(file_path) as f:
@@ -78,6 +80,7 @@ class ManagerEngine(BaseEngine):
                 open_interest=float(open_interest),
                 gateway_name="DB",
             )
+            bar.extra = json.loads(item[extra_head]) if extra_head in item and item[extra_head] else None
 
             bars.append(bar)
 
@@ -115,7 +118,8 @@ class ManagerEngine(BaseEngine):
             "close",
             "volume",
             "turnover",
-            "open_interest"
+            "open_interest",
+            "extra"
         ]
 
         try:
@@ -135,6 +139,7 @@ class ManagerEngine(BaseEngine):
                         "turnover": bar.turnover,
                         "volume": bar.volume,
                         "open_interest": bar.open_interest,
+                        "extra": json.dumps(bar.extra) if bar.extra else None,
                     }
                     writer.writerow(d)
 

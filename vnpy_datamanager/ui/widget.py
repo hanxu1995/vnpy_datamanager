@@ -1,5 +1,6 @@
 from functools import partial
 from datetime import datetime, timedelta
+import json
 
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
@@ -97,7 +98,8 @@ class ManagerWidget(QtWidgets.QWidget):
             "收盘价",
             "成交量",
             "成交额",
-            "持仓量"
+            "持仓量",
+            "额外信息"
         ]
 
         self.table: QtWidgets.QTableWidget = QtWidgets.QTableWidget()
@@ -214,6 +216,7 @@ class ManagerWidget(QtWidgets.QWidget):
         turnover_head: str = dialog.turnover_edit.text()
         open_interest_head: str = dialog.open_interest_edit.text()
         datetime_format: str = dialog.format_edit.text()
+        extra_head: str = dialog.extra_edit.text()
 
         start, end, count = self.engine.import_data_from_csv(
             file_path,
@@ -229,7 +232,8 @@ class ManagerWidget(QtWidgets.QWidget):
             volume_head,
             turnover_head,
             open_interest_head,
-            datetime_format
+            datetime_format,
+            extra_head
         )
 
         msg: str = f"\
@@ -321,6 +325,7 @@ class ManagerWidget(QtWidgets.QWidget):
             self.table.setItem(row, 5, DataCell(str(bar.volume)))
             self.table.setItem(row, 6, DataCell(str(bar.turnover)))
             self.table.setItem(row, 7, DataCell(str(bar.open_interest)))
+            self.table.setItem(row, 8, DataCell(json.dumps(bar.extra) if bar.extra else ""))
 
     def delete_data(
         self,
@@ -500,6 +505,7 @@ class ImportDialog(QtWidgets.QDialog):
         self.volume_edit: QtWidgets.QLineEdit = QtWidgets.QLineEdit("volume")
         self.turnover_edit: QtWidgets.QLineEdit = QtWidgets.QLineEdit("turnover")
         self.open_interest_edit: QtWidgets.QLineEdit = QtWidgets.QLineEdit("open_interest")
+        self.extra_edit: QtWidgets.QLineEdit = QtWidgets.QLineEdit("extra")
 
         self.format_edit: QtWidgets.QLineEdit = QtWidgets.QLineEdit("%Y-%m-%d %H:%M:%S")
 
@@ -530,6 +536,7 @@ class ImportDialog(QtWidgets.QDialog):
         form.addRow("成交量", self.volume_edit)
         form.addRow("成交额", self.turnover_edit)
         form.addRow("持仓量", self.open_interest_edit)
+        form.addRow("额外信息", self.extra_edit)
         form.addRow(QtWidgets.QLabel())
         form.addRow(format_label)
         form.addRow("时间格式", self.format_edit)
