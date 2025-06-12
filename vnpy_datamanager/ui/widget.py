@@ -556,10 +556,6 @@ class DownloadDialog(QtWidgets.QDialog):
         self.setWindowTitle("下载历史数据")
         self.setFixedWidth(300)
 
-        self.setWindowFlags(
-            (self.windowFlags() | QtCore.Qt.CustomizeWindowHint)
-            & ~QtCore.Qt.WindowMaximizeButtonHint)
-
         self.symbol_edit: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
 
         self.exchange_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
