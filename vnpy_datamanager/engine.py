@@ -1,6 +1,6 @@
 import csv
 from datetime import datetime
-from typing import List, Optional, Callable
+from collections.abc import Callable
 
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
@@ -44,21 +44,21 @@ class ManagerEngine(BaseEngine):
         datetime_format: str
     ) -> tuple:
         """"""
-        with open(file_path, "rt") as f:
+        with open(file_path) as f:
             buf: list = [line.replace("\0", "") for line in f]
 
         reader: csv.DictReader = csv.DictReader(buf, delimiter=",")
 
-        bars: List[BarData] = []
-        start: datetime = None
+        bars: list[BarData] = []
+        start: datetime | None = None
         count: int = 0
-        tz = ZoneInfo(tz_name)
+        tz: ZoneInfo = ZoneInfo(tz_name)
 
         for item in reader:
             if datetime_format:
                 dt: datetime = datetime.strptime(item[datetime_head], datetime_format)
             else:
-                dt: datetime = datetime.fromisoformat(item[datetime_head])
+                dt = datetime.fromisoformat(item[datetime_head])
             dt = dt.replace(tzinfo=tz)
 
             turnover = item.get(turnover_head, 0)
@@ -103,7 +103,7 @@ class ManagerEngine(BaseEngine):
         end: datetime
     ) -> bool:
         """"""
-        bars: List[BarData] = self.load_bar_data(symbol, exchange, interval, start, end)
+        bars: list[BarData] = self.load_bar_data(symbol, exchange, interval, start, end)
 
         fieldnames: list = [
             "symbol",
@@ -142,9 +142,10 @@ class ManagerEngine(BaseEngine):
         except PermissionError:
             return False
 
-    def get_bar_overview(self) -> List[BarOverview]:
+    def get_bar_overview(self) -> list[BarOverview]:
         """"""
-        return self.database.get_bar_overview()
+        overview: list[BarOverview] = self.database.get_bar_overview()
+        return overview
 
     def load_bar_data(
         self,
@@ -153,9 +154,9 @@ class ManagerEngine(BaseEngine):
         interval: Interval,
         start: datetime,
         end: datetime
-    ) -> List[BarData]:
+    ) -> list[BarData]:
         """"""
-        bars: List[BarData] = self.database.load_bar_data(
+        bars: list[BarData] = self.database.load_bar_data(
             symbol,
             exchange,
             interval,
@@ -200,16 +201,16 @@ class ManagerEngine(BaseEngine):
         )
 
         vt_symbol: str = f"{symbol}.{exchange.value}"
-        contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
+        contract: ContractData | None = self.main_engine.get_contract(vt_symbol)
 
         # If history data provided in gateway, then query
         if contract and contract.history_data:
-            data: List[BarData] = self.main_engine.query_history(
+            data: list[BarData] = self.main_engine.query_history(
                 req, contract.gateway_name
             )
         # Otherwise use datafeed to query data
         else:
-            data: List[BarData] = self.datafeed.query_bar_history(req, output)
+            data = self.datafeed.query_bar_history(req, output)
 
         if data:
             self.database.save_bar_data(data)
@@ -234,7 +235,7 @@ class ManagerEngine(BaseEngine):
             end=datetime.now(DB_TZ)
         )
 
-        data: List[TickData] = self.datafeed.query_tick_history(req, output)
+        data: list[TickData] = self.datafeed.query_tick_history(req, output)
 
         if data:
             self.database.save_tick_data(data)
